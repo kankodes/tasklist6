@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+  let tasks = [];
+  let currentFilter = 'all';
+
   const toggle = document.getElementById('toggleTheme');
   if (toggle) {
     const currentTheme = localStorage.getItem('theme') || 'light';
@@ -11,7 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  let currentFilter = 'all';
   document.querySelectorAll('.filters button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelector('.filters button.active').classList.remove('active');
@@ -29,10 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
   setInterval(updateTime, 1000);
   updateTime();
 
-  const tasksKey = 'tasks';
-  function getTasks() { return JSON.parse(localStorage.getItem(tasksKey)) || []; }
-  function saveTasks(tasks) { localStorage.setItem(tasksKey, JSON.stringify(tasks)); }
-
   window.addTask = function() {
     const name = document.getElementById('taskName').value.trim();
     const date = document.getElementById('taskDate').value;
@@ -41,25 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Please fill all fields!');
       return;
     }
-    const tasks = getTasks();
     tasks.push({ id: Date.now(), name, date, time, completed: false });
-    saveTasks(tasks);
     renderTasks();
     closePopup();
     clearFields();
   }
 
   window.deleteTask = function(id) {
-    const tasks = getTasks().filter(t => t.id !== id);
-    saveTasks(tasks);
+    tasks = tasks.filter(t => t.id !== id);
     renderTasks();
   }
 
   window.toggleComplete = function(id) {
-    const tasks = getTasks();
     const task = tasks.find(t => t.id === id);
     task.completed = !task.completed;
-    saveTasks(tasks);
     renderTasks();
   }
 
@@ -67,31 +60,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const time = prompt("New time (HH:MM)", "11:00");
     const date = prompt("New date (YYYY-MM-DD)", new Date().toISOString().slice(0,10));
     if (time && date) {
-      const tasks = getTasks();
       const task = tasks.find(t => t.id === id);
       task.time = time;
       task.date = date;
-      saveTasks(tasks);
       renderTasks();
     }
   }
 
   window.editName = function(id) {
-    const newName = prompt("Edit task name", getTasks().find(t => t.id === id).name);
+    const newName = prompt("Edit task name", tasks.find(t => t.id === id).name);
     if (newName) {
-      const tasks = getTasks();
       const task = tasks.find(t => t.id === id);
       task.name = newName;
-      saveTasks(tasks);
       renderTasks();
     }
   }
 
   window.clearAll = function() {
     if (confirm("Clear all tasks?")) {
-      saveTasks([]);
+      tasks = [];
       renderTasks();
     }
+  }
+
+  function clearFields() {
+    document.getElementById('taskName').value = '';
+    document.getElementById('taskDate').value = '';
+    document.getElementById('taskTime').value = '';
   }
 
   function formatTime(t) {
@@ -109,25 +104,19 @@ document.addEventListener('DOMContentLoaded', function() {
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
 
-  function clearFields() {
-    document.getElementById('taskName').value = '';
-    document.getElementById('taskDate').value = '';
-    document.getElementById('taskTime').value = '';
-  }
-
   window.openPopup = function() {
     document.getElementById('popup').style.display = 'flex';
   }
+
   window.closePopup = function() {
     document.getElementById('popup').style.display = 'none';
   }
 
   function renderTasks() {
-    const allTasks = getTasks();
     const tasksContainer = document.getElementById('tasks');
     tasksContainer.innerHTML = '';
 
-    allTasks
+    tasks
       .filter(task => {
         if (currentFilter === 'all') return true;
         if (currentFilter === 'completed') return task.completed;
@@ -153,8 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
         tasksContainer.appendChild(taskDiv);
       });
 
-    const doneCount = allTasks.filter(t => t.completed).length;
-    document.getElementById('progress').innerText = `${doneCount} of ${allTasks.length} completed`;
+    const doneCount = tasks.filter(t => t.completed).length;
+    document.getElementById('progress').innerText = `${doneCount} of ${tasks.length} completed`;
   }
 
   renderTasks();
