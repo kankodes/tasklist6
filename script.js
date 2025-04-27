@@ -1,5 +1,5 @@
-
 document.addEventListener('DOMContentLoaded', function() {
+
   const toggle = document.getElementById('toggleTheme');
   if (toggle) {
     const currentTheme = localStorage.getItem('theme') || 'light';
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function getTasks() { return JSON.parse(localStorage.getItem(tasksKey)) || []; }
   function saveTasks(tasks) { localStorage.setItem(tasksKey, JSON.stringify(tasks)); }
 
-  function addTask() {
+  window.addTask = function() {
     const name = document.getElementById('taskName').value.trim();
     const date = document.getElementById('taskDate').value;
     const time = document.getElementById('taskTime').value;
@@ -49,13 +49,13 @@ document.addEventListener('DOMContentLoaded', function() {
     clearFields();
   }
 
-  function deleteTask(id) {
+  window.deleteTask = function(id) {
     const tasks = getTasks().filter(t => t.id !== id);
     saveTasks(tasks);
     renderTasks();
   }
 
-  function toggleComplete(id) {
+  window.toggleComplete = function(id) {
     const tasks = getTasks();
     const task = tasks.find(t => t.id === id);
     task.completed = !task.completed;
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTasks();
   }
 
-  function editTime(id) {
+  window.editTime = function(id) {
     const time = prompt("New time (HH:MM)", "11:00");
     const date = prompt("New date (YYYY-MM-DD)", new Date().toISOString().slice(0,10));
     if (time && date) {
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function editName(id) {
+  window.editName = function(id) {
     const newName = prompt("Edit task name", getTasks().find(t => t.id === id).name);
     if (newName) {
       const tasks = getTasks();
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function clearAll() {
+  window.clearAll = function() {
     if (confirm("Clear all tasks?")) {
       saveTasks([]);
       renderTasks();
@@ -113,6 +113,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('taskName').value = '';
     document.getElementById('taskDate').value = '';
     document.getElementById('taskTime').value = '';
+  }
+
+  window.openPopup = function() {
+    document.getElementById('popup').style.display = 'flex';
+  }
+  window.closePopup = function() {
+    document.getElementById('popup').style.display = 'none';
   }
 
   function renderTasks() {
@@ -149,22 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const doneCount = allTasks.filter(t => t.completed).length;
     document.getElementById('progress').innerText = `${doneCount} of ${allTasks.length} completed`;
   }
-
-  function openPopup() {
-    document.getElementById('popup').style.display = 'flex';
-  }
-  function closePopup() {
-    document.getElementById('popup').style.display = 'none';
-  }
-
-  document.getElementById('doneButton').addEventListener('click', addTask);
-  window.openPopup = openPopup;
-  window.closePopup = closePopup;
-  window.deleteTask = deleteTask;
-  window.toggleComplete = toggleComplete;
-  window.editTime = editTime;
-  window.editName = editName;
-  window.clearAll = clearAll;
 
   renderTasks();
 });
