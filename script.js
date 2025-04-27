@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-
+  
   let tasks = [];
   let currentFilter = 'all';
 
+  // Theme Toggle
   const toggle = document.getElementById('toggleTheme');
   if (toggle) {
     const currentTheme = localStorage.getItem('theme') || 'light';
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Filter Buttons
   document.querySelectorAll('.filters button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelector('.filters button.active').classList.remove('active');
@@ -23,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Clock
   function updateTime() {
     const now = new Date();
     document.getElementById('currentTime').innerText =
@@ -31,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
   setInterval(updateTime, 1000);
   updateTime();
 
+  // Main Functions
   window.addTask = function() {
     const name = document.getElementById('taskName').value.trim();
     const date = document.getElementById('taskDate').value;
@@ -52,27 +56,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.toggleComplete = function(id) {
     const task = tasks.find(t => t.id === id);
-    task.completed = !task.completed;
-    renderTasks();
-  }
-
-  window.editTime = function(id) {
-    const time = prompt("New time (HH:MM)", "11:00");
-    const date = prompt("New date (YYYY-MM-DD)", new Date().toISOString().slice(0,10));
-    if (time && date) {
-      const task = tasks.find(t => t.id === id);
-      task.time = time;
-      task.date = date;
+    if (task) {
+      task.completed = !task.completed;
       renderTasks();
     }
   }
 
+  window.editTime = function(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      const time = prompt("New time (HH:MM)", task.time || "11:00");
+      const date = prompt("New date (YYYY-MM-DD)", task.date || new Date().toISOString().slice(0,10));
+      if (time && date) {
+        task.time = time;
+        task.date = date;
+        renderTasks();
+      }
+    }
+  }
+
   window.editName = function(id) {
-    const newName = prompt("Edit task name", tasks.find(t => t.id === id).name);
-    if (newName) {
-      const task = tasks.find(t => t.id === id);
-      task.name = newName;
-      renderTasks();
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      const newName = prompt("Edit task name", task.name);
+      if (newName) {
+        task.name = newName;
+        renderTasks();
+      }
     }
   }
 
@@ -81,12 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
       tasks = [];
       renderTasks();
     }
-  }
-
-  function clearFields() {
-    document.getElementById('taskName').value = '';
-    document.getElementById('taskDate').value = '';
-    document.getElementById('taskTime').value = '';
   }
 
   function formatTime(t) {
@@ -102,6 +106,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const selected = new Date(d).toDateString();
     if (today === selected) return "Today";
     return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+
+  function clearFields() {
+    document.getElementById('taskName').value = '';
+    document.getElementById('taskDate').value = '';
+    document.getElementById('taskTime').value = '';
   }
 
   window.openPopup = function() {
@@ -146,5 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('progress').innerText = `${doneCount} of ${tasks.length} completed`;
   }
 
+  // ✅ Binding Done button to Add Task!
+  document.getElementById('doneButton').addEventListener('click', addTask);
+
+  // Initial render
   renderTasks();
 });
